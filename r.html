@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            overflow: hidden;
+            background: black;
+            position: relative;
+            color: white;
+            height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+            perspective: 1000px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        input, select {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgb(247, 6, 6);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4);
+        }
+        input:focus, select:focus {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(0, 255, 255, 0.8);
+            outline: none;
+        }
+        button {
+            background: linear-gradient(45deg, cyan, blue);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.6);
+        }
+        button:hover {
+            transform: scale(1.1) rotateY(10deg);
+            box-shadow: 0 5px 25px rgba(0, 255, 255, 1);
+        }
+        .result {
+            font-size: 20px;
+            margin-top: 10px;
+            text-shadow: 0 0 10px cyan;
+        }
+        .hidden {
+            display: none;
+        }
+        
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle 5s infinite alternate, move 3s infinite linear;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        @keyframes move {
+            from { transform: translateY(0px); }
+            to { transform: translateY(100px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="container">
+        <h2 style="text-shadow: 0 0 15px cyan;">Force Calculator</h2>
+        <label for="calcType">Select Value to Calculate:</label>
+        <select id="calcType">
+            <option value="R">Calculate R (Resultant Force)</option>
+            <option value="P">Calculate P (Force 1)</option>
+            <option value="Q">Calculate Q (Force 2)</option>
+            <option value="theta">Calculate θ (Angle)</option>
+            <option value="alpha">Calculate α (Alternate Angle)</option>
+        </select>
+        
+        <button onclick="showInputFields()">Enter Values</button>
+        
+        <div id="inputFields" class="hidden">
+            <input type="number" id="P" placeholder="Enter P (Force 1)">
+            <input type="number" id="Q" placeholder="Enter Q (Force 2)">
+            <input type="number" id="theta" placeholder="Enter θ (Angle in Degrees)">
+            <input type="number" id="R" placeholder="Enter R (Resultant Force)">
+            <button onclick="calculate()">Calculate</button>
+        </div>
+        
+        <div class="result" id="result"></div>
+    </div>
+    <script>
+        function showInputFields() {
+            document.getElementById("inputFields").classList.remove("hidden");
+        }
+
+        function calculate() {
+            let calcType = document.getElementById("calcType").value;
+            let P = parseFloat(document.getElementById("P").value);
+            let Q = parseFloat(document.getElementById("Q").value);
+            let theta = parseFloat(document.getElementById("theta").value);
+            let R = parseFloat(document.getElementById("R").value);
+            
+            let resultText = "";
+            let thetaRad = theta * (Math.PI / 180);
+            
+            if (calcType === "R" && !isNaN(P) && !isNaN(Q) && !isNaN(theta)) {
+                R = Math.sqrt(P**2 + Q**2 + 2 * P * Q * Math.cos(thetaRad));
+                resultText = `Resultant Force (R) = ${R.toFixed(2)} N`;
+            } else if (calcType === "P" && !isNaN(R) && !isNaN(Q) && !isNaN(theta)) {
+                P = Math.sqrt(R**2 - Q**2 - 2 * Q * R * Math.cos(thetaRad));
+                resultText = `Force P = ${P.toFixed(2)} N`;
+            } else if (calcType === "Q" && !isNaN(R) && !isNaN(P) && !isNaN(theta)) {
+                Q = Math.sqrt(R**2 - P**2 - 2 * P * R * Math.cos(thetaRad));
+                resultText = `Force Q = ${Q.toFixed(2)} N`;
+            } else if (calcType === "theta" && !isNaN(R) && !isNaN(P) && !isNaN(Q)) {
+                let cosTheta = (R**2 - P**2 - Q**2) / (2 * P * Q);
+                theta = Math.acos(cosTheta) * (180 / Math.PI);
+                resultText = `Angle θ = ${theta.toFixed(2)}°`;
+            } else if (calcType === "alpha" && !isNaN(P) && !isNaN(Q) && !isNaN(theta)) {
+                let sinTheta = Math.sin(thetaRad);
+                let cosTheta = Math.cos(thetaRad);
+                let tanAlpha = (Q * sinTheta) / (P + Q * cosTheta);
+                let alpha = Math.atan(tanAlpha) * (180 / Math.PI);
+                resultText = `Alternate Angle α = ${alpha.toFixed(2)}°`;
+            } else {
+                resultText = "Please enter valid values!";
+            }
+            
+            document.getElementById("result").innerHTML = resultText;
+        }
+
+function createStars(count) {
+    const starsContainer = document.getElementById("stars");
+    for (let i = 0; i < count; i++) {
+        let star = document.createElement("div");
+        star.className = "star";
+        star.style.top = Math.random() * 100 + "%";
+        star.style.left = Math.random() * 100 + "%";
+        star.style.animationDuration = (Math.random() * 3 + 2) + "s";
+        starsContainer.appendChild(star);
+    }
+}
+createStars(200);
+</script>
+</body>
+</html>
